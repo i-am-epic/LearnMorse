@@ -61,6 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 void main() {
   runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
     home: HomeScreen(),
     routes: {
       'main': (context) => HomeScreen(),
