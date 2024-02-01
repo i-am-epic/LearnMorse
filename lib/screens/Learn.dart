@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
+import 'package:vibration/vibration.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,32 +32,32 @@ class MorseCodeGameScreen extends StatefulWidget {
 
 class _MorseCodeGameScreenState extends State<MorseCodeGameScreen> {
   final Map<String, String> morseCodeMap = {
-    'A': '.-',
-    'B': '-...',
-    'C': '-.-.',
-    'D': '-..',
-    'E': '.',
-    'F': '..-.',
-    'G': '--.',
-    'H': '....',
-    'I': '..',
-    'J': '.---',
-    'K': '-.-',
-    'L': '.-..',
+    'A': '·-',
+    'B': '-···',
+    'C': '-·-·',
+    'D': '-··',
+    'E': '·',
+    'F': '··-·',
+    'G': '--·',
+    'H': '····',
+    'I': '··',
+    'J': '·---',
+    'K': '-·-',
+    'L': '·-··',
     'M': '--',
-    'N': '-.',
+    'N': '-·',
     'O': '---',
-    'P': '.--.',
-    'Q': '--.-',
-    'R': '.-.',
-    'S': '...',
+    'P': '·--·',
+    'Q': '--·-',
+    'R': '·-·',
+    'S': '···',
     'T': '-',
-    'U': '..-',
-    'V': '...-',
-    'W': '.--',
-    'X': '-..-',
-    'Y': '-.--',
-    'Z': '--..',
+    'U': '··-',
+    'V': '···-',
+    'W': '·--',
+    'X': '-··-',
+    'Y': '-·--',
+    'Z': '--··',
   };
 
   late String previousLetter;
@@ -85,8 +87,32 @@ class _MorseCodeGameScreenState extends State<MorseCodeGameScreen> {
       points = 0;
       showHint = false;
       stopwatch = Stopwatch();
-      timer = null;
+      timer = Timer(const Duration(seconds: 8), showHintIfTimeRunsOut);
     });
+  }
+
+  void vibrate() async {
+    final hasVibrator = await Vibration.hasCustomVibrationsSupport();
+    if (hasVibrator!) {
+      Vibration.vibrate(pattern: [1, 500, 10, 1000], intensities: [1, 255]);
+      print('Vibrating2');
+    } else {
+      Vibration.vibrate();
+      await Future.delayed(Duration(milliseconds: 180));
+      Vibration.vibrate();
+    }
+  }
+
+  void vibrate2() async {
+    final hasVibrator = await Vibration.hasAmplitudeControl();
+    if (hasVibrator!) {
+      //Vibration.vibrate(duration: 500, amplitude: 20, intensities: [1]);
+      print('Vibrating');
+    } else {
+      Vibration.vibrate();
+      await Future.delayed(Duration(milliseconds: 5));
+      Vibration.vibrate();
+    }
   }
 
   String getRandomLetter() {
@@ -101,7 +127,6 @@ class _MorseCodeGameScreenState extends State<MorseCodeGameScreen> {
     }
     setState(() {
       stopwatch = Stopwatch()..start();
-      timer = Timer(const Duration(seconds: 4), showHintIfTimeRunsOut);
       resetTimer = Timer(const Duration(seconds: 1), () {
         setState(() {
           userGuess = '';
@@ -122,15 +147,19 @@ class _MorseCodeGameScreenState extends State<MorseCodeGameScreen> {
         points += 3;
         previousLetter = currentLetter;
         currentLetter = nextLetter;
-        timer?.cancel();
+        timer = Timer(const Duration(seconds: 10), showHintIfTimeRunsOut);
         userGuess = '';
         currentMorseCode = morseCodeMap[currentLetter]!;
         showHint = false;
+        vibrate2();
         nextLetter = getRandomLetter();
       });
     } else {
       setState(() {
         points -= showHint ? 1 : 2;
+        userGuess = '';
+        vibrate();
+        timer = Timer(const Duration(seconds: 2), showHintIfTimeRunsOut);
       });
     }
   }
@@ -151,23 +180,25 @@ class _MorseCodeGameScreenState extends State<MorseCodeGameScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Center(
-          child: Text(
-            'Learn Morse',
-            style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-            ),
+        title: Text(
+          'Learn Morse',
+          style: TextStyle(
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
+            color: Color.fromARGB(255, 141, 141, 141),
           ),
         ),
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text('Points: $points'),
+            child: Text(
+              'Points: $points',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
-      backgroundColor: const Color.fromARGB(255, 250, 209, 195),
+      backgroundColor: Color.fromARGB(255, 32, 32, 32),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -176,55 +207,77 @@ class _MorseCodeGameScreenState extends State<MorseCodeGameScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildCircle(nextLetter, faded: true, size: 70.0),
-                _buildCircle(currentLetter, size: 100.0),
-                _buildCircle(previousLetter, faded: true, size: 70.0),
+                _buildCircle(nextLetter, faded: true, size: 80.0),
+                _buildCircle(currentLetter, size: 120.0),
+                _buildCircle(previousLetter, faded: true, size: 80.0),
               ],
             ),
             const SizedBox(height: 40),
             Text(
               showHint ? currentMorseCode : '',
-              style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 141, 141, 141),
+              ),
             ),
             const SizedBox(height: 20),
             Text(
               userGuess,
-              style: const TextStyle(fontSize: 60, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 60,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(251, 121, 85, 72),
+              ),
             ),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
-                  onPressed: () => handleButtonPress('.'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 79, 56, 47),
+                NeumorphicButton(
+                  padding: const EdgeInsets.fromLTRB(65, 100, 65, 100),
+                  onPressed: () => handleButtonPress('·'),
+                  provideHapticFeedback: true,
+                  style: NeumorphicStyle(
+                    boxShape: NeumorphicBoxShape.roundRect(
+                        BorderRadius.all(Radius.circular(60))),
+                    color: Color.fromARGB(255, 22, 22, 22),
+                    shape: NeumorphicShape.concave,
+                    shadowDarkColor: Color.fromARGB(255, 0, 0, 0),
+                    shadowLightColor: Color.fromARGB(255, 80, 80, 80),
                   ),
-                  child: Container(
-                    width: 120,
-                    height: 200,
-                    alignment: Alignment.center,
-                    child: const Text(
-                      '.',
-                      style: TextStyle(fontSize: 70, color: Colors.white),
+                  child: Text(
+                    '·',
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 141, 141, 141),
+                      fontSize: 80,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Roboto',
                     ),
                   ),
                 ),
-                ElevatedButton(
+                NeumorphicButton(
                   onPressed: () => handleButtonPress('-'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 79, 56, 47),
+                  provideHapticFeedback: true,
+                  padding: const EdgeInsets.fromLTRB(65, 100, 65, 100),
+                  style: NeumorphicStyle(
+                    boxShape: NeumorphicBoxShape.roundRect(
+                        BorderRadius.all(Radius.circular(60))),
+                    color: Color.fromARGB(255, 22, 22, 22),
+                    shape: NeumorphicShape.concave,
+                    shadowDarkColor: Color.fromARGB(255, 0, 0, 0),
+                    shadowLightColor: Color.fromARGB(255, 80, 80, 80),
                   ),
-                  child: Container(
-                    width: 120,
-                    height: 200,
-                    alignment: Alignment.center,
-                    child: const Text(
-                      '-',
-                      style: TextStyle(fontSize: 70, color: Colors.white),
+                  child: Text(
+                    '-',
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 141, 141, 141),
+                      fontSize: 80,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Roboto',
                     ),
                   ),
-                ),
+                )
               ],
             ),
           ],
