@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'widgets/button.dart'; // Import your custom button widget
 import 'screens/Learn.dart'; // Import your main screen widget
+import 'screens/Practise.dart'; // Import your main screen widget
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -35,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             CustomButton(
               title: 'Learn',
-              page: 'Learn',
+              page: 'Practise',
             ),
             SizedBox(height: 20),
             CustomButton(
@@ -44,7 +45,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SizedBox(height: 20),
             CustomButton(
-              title: 'Multiplayer',
+              title: 'Analytics',
+              page: 'Learn',
+            ),
+            SizedBox(height: 20),
+            CustomButton(
+              title: 'Decoder',
               page: 'Learn',
             ),
             SizedBox(height: 20),
