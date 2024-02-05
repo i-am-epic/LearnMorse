@@ -1,15 +1,17 @@
-import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:vibration/vibration.dart';
+import 'dart:async'; // for Timer
+import 'dart:math'; // for Random
+import 'AnalyticsPage.dart';
+import '../models/CharacterAnalytics.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MorseCodeGameScreen extends StatefulWidget {
-  const MorseCodeGameScreen({super.key});
+  const MorseCodeGameScreen({Key? key});
 
   @override
   _MorseCodeGameScreenState createState() => _MorseCodeGameScreenState();
@@ -70,6 +72,7 @@ class _MorseCodeGameScreenState extends State<MorseCodeGameScreen> {
   late Stopwatch stopwatch;
   late Timer? timer;
   Timer? resetTimer;
+  Map<String, CharacterAnalytics> characterAnalyticsMap = {};
 
   @override
   void initState() {
@@ -141,24 +144,78 @@ class _MorseCodeGameScreenState extends State<MorseCodeGameScreen> {
     });
   }
 
-  void checkMorseCode() {
+  void checkMorseCode() async {
     if (userGuess == currentMorseCode) {
+      final elapsedMilliseconds =
+          stopwatch.elapsedMilliseconds; // Store the elapsed time
+      stopwatch.stop(); // Stop the stopwatch here
       setState(() {
         points += 3;
+
+        // Update analytics for the character
+        characterAnalyticsMap.update(
+          currentLetter,
+          (analytics) {
+            return CharacterAnalytics(
+              correctAttempts: analytics.correctAttempts + 1,
+              totalAttempts: analytics.totalAttempts + 1,
+              totalTime: analytics.totalTime + elapsedMilliseconds,
+              hintsUsed: analytics.hintsUsed, // No change in hintsUsed
+            );
+            
+          },
+          ifAbsent: () {
+            return CharacterAnalytics(
+              correctAttempts: 1,
+              totalAttempts: 1,
+              totalTime: elapsedMilliseconds,
+              hintsUsed: 0, // Initialize hintsUsed
+            );
+          },
+        );
+
         previousLetter = currentLetter;
         currentLetter = nextLetter;
-        timer = Timer(const Duration(seconds: 10), showHintIfTimeRunsOut);
         userGuess = '';
         currentMorseCode = morseCodeMap[currentLetter]!;
         showHint = false;
         vibrate2();
         nextLetter = getRandomLetter();
+
+        // Start a new timer after updating UI
+        timer = Timer(const Duration(seconds: 10), showHintIfTimeRunsOut);
       });
     } else {
+      final elapsedMilliseconds =
+          stopwatch.elapsedMilliseconds; // Store the elapsed time
+      stopwatch.stop(); // Stop the stopwatch here
       setState(() {
         points -= showHint ? 1 : 2;
+
+        // Update analytics for the character
+        characterAnalyticsMap.update(
+          currentLetter,
+          (analytics) {
+            return CharacterAnalytics(
+              correctAttempts: analytics.correctAttempts,
+              totalAttempts: analytics.totalAttempts + 1,
+              totalTime: analytics.totalTime + elapsedMilliseconds,
+              hintsUsed:
+                  showHint ? analytics.hintsUsed + 1 : analytics.hintsUsed,
+            );
+          },
+          ifAbsent: () {
+            return CharacterAnalytics(
+              correctAttempts: 0,
+              totalAttempts: 1,
+              totalTime: elapsedMilliseconds,
+              hintsUsed: showHint ? 1 : 0,
+            );
+          },
+        );
         userGuess = '';
         vibrate();
+        // Start a new timer after updating UI
         timer = Timer(const Duration(seconds: 2), showHintIfTimeRunsOut);
       });
     }
@@ -175,13 +232,44 @@ class _MorseCodeGameScreenState extends State<MorseCodeGameScreen> {
     });
   }
 
+  void showAnalyticsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Character Analytics'),
+          content: Column(
+            children: characterAnalyticsMap.entries
+                .map(
+                  (entry) => ListTile(
+                    title: Text(entry.key),
+                    subtitle: Text(
+                      'Correct Attempts: ${entry.value.correctAttempts}\nTotal Attempts: ${entry.value.totalAttempts}',
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Text(
-          'Learn Morse',
+          'Practice Morse',
           style: TextStyle(
             fontSize: 30,
             fontWeight: FontWeight.bold,
@@ -195,6 +283,17 @@ class _MorseCodeGameScreenState extends State<MorseCodeGameScreen> {
               'Points: $points',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AnalyticsPage(characterAnalyticsMap),
+                ),
+              );
+            },
+            icon: Icon(Icons.analytics),
           ),
         ],
       ),

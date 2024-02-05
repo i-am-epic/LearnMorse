@@ -3,6 +3,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'widgets/button.dart'; // Import your custom button widget
 import 'screens/Learn.dart'; // Import your main screen widget
 import 'screens/Practise.dart'; // Import your main screen widget
+import 'screens/AnalyticsPage.dart'; // Import your main screen widget
+import '../models/CharacterAnalytics.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -26,7 +28,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Morse Code App'),
+        title: Text(
+          'Morse Code',
+          style: TextStyle(
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
+            color: Color.fromARGB(255, 141, 141, 141),
+          ),
+        ),
         forceMaterialTransparency: true,
       ),
       backgroundColor: const Color.fromARGB(255, 31, 31, 31),
@@ -46,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(height: 20),
             CustomButton(
               title: 'Analytics',
-              page: 'Learn',
+              page: 'AnalyticsPage',
             ),
             SizedBox(height: 20),
             CustomButton(
@@ -72,6 +81,7 @@ void main() {
     routes: {
       'main': (context) => HomeScreen(),
       'other': (context) => MyApp(),
+      //'analytics': (context) => AnalyticsPage(characterAnalyticsMap: {}),
       // Add more routes as needed
     },
   ));

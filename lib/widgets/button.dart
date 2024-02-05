@@ -5,6 +5,7 @@ import 'package:audioplayers/audioplayers.dart';
 import '../screens/Learn.dart'; // Import your main screen widget
 import '../main.dart'; // Import your main screen widget
 import '../screens/Practise.dart'; // Import your main screen widget
+import '../screens/AnalyticsPage.dart'; // Import your main screen widget
 
 class CustomButton extends StatelessWidget {
   final String? imagePath;
