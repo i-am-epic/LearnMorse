@@ -114,7 +114,6 @@ class _LearnMorseCodePageState extends State<LearnMorseCodePage> {
         pronunciationMap[letter] ?? ''; // Get the pronunciation from the map
     String morsecodestr =
         morseCodeMap[letter] ?? ''; // Get the pronunciation from the map
-
     return Card(
       key: Key(letter), // Use the letter as the key for each card
       color: Color.fromARGB(255, 0, 0, 0),
@@ -162,7 +161,8 @@ class _LearnMorseCodePageState extends State<LearnMorseCodePage> {
           SizedBox(height: 20),
         ],
       ),
-    );
+    ) // Empty container to cover the card contents
+        ;
   }
 
   void _shuffleCards() {
@@ -208,11 +208,6 @@ class _LearnMorseCodePageState extends State<LearnMorseCodePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Swipe to learn Morse Code!',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Color.fromARGB(255, 48, 48, 48),
-            )),
         backgroundColor: Colors.transparent,
       ),
       backgroundColor: Color.fromARGB(255, 31, 31, 31),
@@ -237,33 +232,60 @@ class _LearnMorseCodePageState extends State<LearnMorseCodePage> {
           ),
           Column(
             children: [
-              NeumorphicButton(
-                onPressed: _shuffleCards,
-                style: const NeumorphicStyle(
-                  color: Color.fromARGB(255, 22, 22, 22),
-                  shape: NeumorphicShape.concave,
-                  shadowDarkColor: Color.fromARGB(255, 0, 0, 0),
-                  shadowLightColor: Color.fromARGB(255, 80, 80, 80),
-                ),
-                child: Icon(
-                  Icons.shuffle,
-                  color: Color.fromARGB(255, 141, 141, 141),
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SizedBox(height: 20),
+                  Text(
+                    morseCards.length.toString(),
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 141, 141, 141),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  NeumorphicButton(
+                    onPressed: _shuffleCards,
+                    style: const NeumorphicStyle(
+                      color: Color.fromARGB(255, 22, 22, 22),
+                      shape: NeumorphicShape.concave,
+                      shadowDarkColor: Color.fromARGB(255, 0, 0, 0),
+                      shadowLightColor: Color.fromARGB(255, 80, 80, 80),
+                    ),
+                    child: Icon(
+                      Icons.shuffle,
+                      color: Color.fromARGB(255, 141, 141, 141),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    rightSwipedLetters.length.toString(),
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 141, 141, 141),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                ],
               ),
               Expanded(
-                child: SwipingCardDeck(
-                  cardDeck: morseCards
-                      .where((card) =>
-                          !rightSwipedLetters.contains(card.key.toString()))
-                      .toList(),
-                  onDeckEmpty: () => debugPrint("Card deck empty"),
-                  onLeftSwipe: (Card card) => _onLeftSwipe(card.key.toString()),
-                  onRightSwipe: (Card card) =>
-                      _onRightSwipe(card.key.toString()),
-                  swipeThreshold: MediaQuery.of(context).size.width / 4,
-                  minimumVelocity: 800,
-                  cardWidth: 200,
-                  rotationFactor: 0.6 / 3.14,
+                child: SizedBox(
+                  child: SwipingCardDeck(
+                    cardDeck: morseCards
+                        .where((card) =>
+                            !rightSwipedLetters.contains(card.key.toString()))
+                        .toList(),
+                    onDeckEmpty: () => debugPrint("Card deck empty"),
+                    onLeftSwipe: (Card card) =>
+                        _onLeftSwipe(card.key.toString()),
+                    onRightSwipe: (Card card) =>
+                        _onRightSwipe(card.key.toString()),
+                    swipeThreshold: MediaQuery.of(context).size.width / 2,
+                    cardWidth: 200,
+                    rotationFactor: 0.2 / 2,
+                  ),
                 ),
               ),
             ],
